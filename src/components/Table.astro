@@ -1,0 +1,46 @@
+---
+
+---
+<table role="grid">
+    <thead>
+      <tr>
+        <th scope="col">SKU</th>
+        <th scope="col">Description</th>
+        <th scope="col">Stock</th>
+        <th scope="col">Price</th>
+        <th scope="col">Store</th>
+        <!-- <th scope="col">Last Update</th>
+        <th scope="col">Num. Updates</th> -->
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+
+
+    </tbody>
+  </table>
+
+  <script>
+    function updateTable(products) {
+        const tbody = document.getElementById("tableBody");
+        if(tbody!=null) {
+            tbody.innerHTML = "";
+            products.forEach((product, i) => {
+                const row = tbody.insertRow(i);
+                const c0 = row.insertCell(0);
+                const c1 = row.insertCell(1);
+                const c2 = row.insertCell(2);
+                const c3 = row.insertCell(3);
+                const c4 = row.insertCell(4);
+                c0.innerHTML = product.sku;
+                c1.innerHTML = product.description;
+                c2.innerHTML = product.stock;
+                c3.innerHTML = product.price;
+                c4.innerHTML = product.id_store;
+            })
+        } 
+    }
+    const response = await fetch('http://192.168.1.10:8081/products/')
+    const products = await response.json();
+    
+    updateTable(products)
+  </script>
