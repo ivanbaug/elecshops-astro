@@ -39,18 +39,19 @@ import { apiUrl } from "../config";
             tbody.innerHTML = "";
 
             products.forEach((product, i:number) => {
+                const linkIcon = '&nbsp<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>';
                 const row = tbody.insertRow(i);
-                row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700";
+                row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
                 const c0 = row.insertCell(0);
                 c0.className = "px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
                 const c1 = row.insertCell(1);
                 const c2 = row.insertCell(2);
                 const c3 = row.insertCell(3);
                 const c4 = row.insertCell(4);
-                c0.innerHTML = '<a href="'+product.url+'">'+product.sku+'</a>';
+                c0.innerHTML = '<a href="'+product.url+'" class="flex items-center font-bold visited:text-indigo-700" ><span>'+product.sku+'</span>'+linkIcon+'</a>';
                 c1.innerHTML = product.description;
                 c2.innerHTML = ''+product.stock;
-                c3.innerHTML = ''+product.price;
+                c3.innerHTML = '$ '+product.price.toLocaleString('en');
                 c4.innerHTML = ''+product.id_store;
             })
         } 
