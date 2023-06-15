@@ -2,16 +2,15 @@
 import { apiUrl } from "../config";
 ---
 
-<div class="container mx-auto relative overflow-x-auto shadow-md">
-
+<div class="container mx-auto relative overflow-x-auto shadow-md " style="height: calc(100vh - 60px - 74px);">
   <table role="grid" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-50">
         <tr>
-          <th scope="col" class="px-6 py-3">SKU</th>
-          <th scope="col" class="px-6 py-3">Description</th>
-          <th scope="col" class="px-6 py-3">Stock</th>
-          <th scope="col" class="px-6 py-3">Price</th>
-          <th scope="col" class="px-6 py-3">Store</th>
+          <th scope="col" class="sm:px-6 py-3">SKU</th>
+          <th scope="col" class="sm:px-6 py-3">Description</th>
+          <th scope="col" class="sm:px-6 py-3">Stock</th>
+          <th scope="col" class="sm:px-6 py-3">Price</th>
+          <th scope="col" class="sm:px-6 py-3 hidden sm:block">Store</th>
           <!-- <th scope="col">Last Update</th>
           <th scope="col">Num. Updates</th> -->
         </tr>
@@ -21,47 +20,186 @@ import { apiUrl } from "../config";
     </table>
 </div>
 
-  <script >
-    interface Product {
-      url: string;
-      sku: string;
-      description: string;
-      stock: number;
-      price:number;
-      id_store: number;
-      last_update: Date;
-      num_updates: number;
-      store: string;
-    }
+<nav aria-label="Page navigation example" class="flex flex-col items-center">
+  <!-- Help text -->
+  <span class="text-sm text-gray-700 dark:text-gray-400">
+      Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">1</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">10</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">100</span> Entries
+  </span>
+  <ul id="paginationButtons" class="inline-flex items-center -space-x-px">
 
-    function updateTable(products: Product[]) {
-        if(tbody!=null) {
-            tbody.innerHTML = "";
+  </ul>
+</nav>
 
-            products.forEach((product, i:number) => {
-                const linkIcon = '&nbsp<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>';
-                const row = tbody.insertRow(i);
-                row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
-                const c0 = row.insertCell(0);
-                c0.className = "px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
-                const c1 = row.insertCell(1);
-                const c2 = row.insertCell(2);
-                const c3 = row.insertCell(3);
-                const c4 = row.insertCell(4);
-                c0.innerHTML = '<a href="'+product.url+'" class="flex items-center font-bold visited:text-indigo-700" ><span>'+product.sku+'</span>'+linkIcon+'</a>';
-                c1.innerHTML = product.description;
-                c2.innerHTML = ''+product.stock;
-                c3.innerHTML = '$ '+product.price.toLocaleString('en');
-                c4.innerHTML = ''+product.id_store;
-            })
-        } 
-    }
 
-    const tbody = document.getElementById("tableBody") as HTMLTableElement;
+
+<script >
+  interface Product {
+    url: string;
+    sku: string;
+    description: string;
+    stock: number;
+    price:number;
+    id_store: number;
+    last_update: Date;
+    num_updates: number;
+    store_name: string;
+    country: string;
+  }
+  interface ProductResponseData {
+    data: Product[];
+    page: number;
+    per_page: number;
+    page_qty: number;
+    total: number;
+  }
+  interface TableQueryParams {
+    query: string;
+    instock: string;
+    order_by: string;
+    sort: string;
+    page: number;
+    per_page: number;
+  }
+
+  let tQueryParams : TableQueryParams;
+
+  function updateTable(products: Product[]) {
     if(tbody!=null) {
-      const apiUrl = tbody.dataset.api_url;
-      const response = await fetch(apiUrl+'/products/')
-      const products = await response.json() as Product[];
-      updateTable(products)
+        tbody.innerHTML = "";
+        products.forEach((product, i:number) => {
+            const linkIcon = '&nbsp<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>';
+            const row = tbody.insertRow(i);
+            row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
+            const c0 = row.insertCell(0);
+            const c1 = row.insertCell(1);
+            const c2 = row.insertCell(2);
+            const c3 = row.insertCell(3);
+            const c4 = row.insertCell(4);
+            c0.className = "sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
+            c0.innerHTML = '<a href="'+product.url+'" class="flex items-center font-bold visited:text-indigo-700 dark:visited:text-indigo-400" ><span>'+product.sku+'</span>'+linkIcon+'</a>';
+            c1.innerHTML = product.description;
+            c2.className = 'text-right pr-4'
+            c2.innerHTML = ''+product.stock;
+            c3.className = 'text-right pr-4'
+            c3.innerHTML = '$ '+product.price.toLocaleString('en');
+            c4.className = 'text-center hidden sm:table-cell'
+            c4.innerHTML = ''+product.store_name;
+        })
+    } 
+  }
+
+  function updatePagination(prd: ProductResponseData) {
+    if (tbody != null){
+      const pageFirstRow = document.getElementById("pageFirstRow") as HTMLSpanElement;
+      const pageLastRow = document.getElementById("pageLastRow") as HTMLSpanElement;
+      const totalRows = document.getElementById("totalRows") as HTMLSpanElement;
+      const paginationButtons = document.getElementById("paginationButtons") as HTMLUListElement
+      pageFirstRow.innerText = ''+((prd.page-1)*prd.per_page+1);
+      pageLastRow.innerText = ''+(prd.page*prd.per_page);
+      totalRows.innerText = ''+prd.total;
+
+      paginationButtons.innerHTML = '';
+
+      // Add previous button
+      const prev = buildPagButton(0, prd.page, 'prev', prd.page === 1);
+      paginationButtons.appendChild(prev);
+
+      // Add page buttons
+      for (let i=1; i<=prd.page_qty; i++){
+        const li = buildPagButton(i, prd.page);
+        paginationButtons.appendChild(li);
+      }
+
+      // Add next button
+      const nxt = buildPagButton(0, prd.page, 'nxt', prd.page === prd.page_qty);
+      paginationButtons.appendChild(nxt);
     }
-  </script>
+  }
+
+  function buildPagButton(n:number, currentPage: number, btnType?:string, btnDisabled?:boolean){
+    const li = document.createElement('li') as HTMLLIElement;
+    const btn = document.createElement('button') as HTMLButtonElement;
+    if (btnType === 'prev') {
+      btn.className = "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
+      btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`;
+      if (btnDisabled) {
+        btn.disabled = true;
+      } else {
+        btn.onclick = () => {
+          tQueryParams.page = currentPage - 1;
+          saveQueryParams();
+          refreshProductsTable();
+        };
+      }
+    } else if (btnType === 'nxt') {
+      btn.className = "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
+      btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>`;
+      if (btnDisabled) {
+        btn.disabled = true;
+      } else {
+        btn.onclick = () => {
+          tQueryParams.page = currentPage + 1;
+          saveQueryParams();
+          refreshProductsTable();
+        };
+      }
+    } else {
+      btn.className = n === currentPage ? "z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" : "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
+      btn.innerText = '' + n;
+      btn.onclick = () => {
+        tQueryParams.page = n;
+        saveQueryParams();
+        refreshProductsTable();
+      };
+    }
+    li.appendChild(btn);
+    return li;
+  }
+
+  function newQueryParams (): TableQueryParams{
+    return {
+      query: '', instock: '', order_by: '', sort: '', page: 0, per_page: 0,
+    }
+  }
+
+  function retrieveQueryParams(){
+    const storedItem = sessionStorage.getItem('tQueryParams');
+    tQueryParams = storedItem ? JSON.parse(storedItem) as TableQueryParams : newQueryParams();
+  }
+
+  function saveQueryParams(){
+    sessionStorage.setItem('tQueryParams',JSON.stringify(tQueryParams));
+  }
+
+  function buildQueryString() : string{
+    let qArray : string[] = [];
+    for (let [key, value] of Object.entries(tQueryParams)) {
+      if(value){
+        qArray.push(key+'='+value);
+      }
+    }
+    return qArray.length > 0 ? '?'+qArray.join('&') : '';
+  }
+
+  async function onPageClick(page: number){
+    tQueryParams.page = page;
+    await refreshProductsTable();
+  }
+
+  async function refreshProductsTable(){
+    
+    if(tbody!=null) {
+      retrieveQueryParams();
+      const apiUrl = tbody.dataset.api_url;
+      const response = await fetch(apiUrl+'/products/'+buildQueryString())
+      const prd = await response.json() as ProductResponseData;
+      const products = prd.data;
+      updateTable(products);
+      updatePagination(prd); 
+    }
+  }
+  const tbody = document.getElementById("tableBody") as HTMLTableElement;
+  retrieveQueryParams();
+  onPageClick(1);
+
+</script>
