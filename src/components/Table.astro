@@ -114,7 +114,7 @@ import { apiUrl } from "../config";
       const totalRows = document.getElementById("totalRows") as HTMLSpanElement;
       const paginationButtons = document.getElementById("paginationButtons") as HTMLUListElement
       pageFirstRow.innerText = ''+((prd.page-1)*prd.per_page+1);
-      pageLastRow.innerText = ''+(prd.page*prd.per_page);
+      pageLastRow.innerText = ''+Math.min(prd.page*prd.per_page, prd.total);
       totalRows.innerText = ''+prd.total;
 
       paginationButtons.innerHTML = '';
@@ -217,8 +217,15 @@ import { apiUrl } from "../config";
           const col = b.getAttribute("data-sort-by") as string;
           sortBy(col);
         })
-      })
+      });
   }
+
+  $tableQueryParams.listen((tqp,changedKey)=>{
+    if (changedKey === 'query'){
+      $tableQueryParams.setKey('page',1);
+      refreshProductsTable();
+    }
+  });
 
   
 </script>

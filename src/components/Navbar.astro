@@ -21,7 +21,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
             </div>
-            <input type="text" id="email-address-icon" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-48 pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search">
+            <input type="text" id="search-field" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-48 pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search">
           </li>
           <li>
             <a href="#" class="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white md:dark:text-blue-500" aria-current="page">Home</a>
@@ -57,15 +57,27 @@
 
 
 <script>
+  import { $tableQueryParams } from '../stores/tableQueryParamsStore'
 
   const btnNavbar = document.querySelector('#btn-menu-navbar') as HTMLButtonElement
   const btnDarkMode = document.querySelector('#btn-dark-mode') as HTMLButtonElement
   const btnLightMode = document.querySelector('#btn-light-mode') as HTMLButtonElement
   const menuNavbar = document.querySelector('#navbar-default') as HTMLElement
+  const inputSearch = document.querySelector('#search-field') as HTMLInputElement
 
   btnNavbar.addEventListener('click',()=>{
     menuNavbar.classList.toggle('hidden');
   });
+
+
+  function debounce( callback: Function, delay = 500 ) {
+    let timeout: number;
+    return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(callback, delay);
+    }
+  };
+
   const fnToggle = () => {
     if (
 				localStorage.theme === "dark" ||
@@ -76,7 +88,12 @@
 			} else {
 				document.documentElement.classList.remove("dark");
 			}
-  }
+  };
+
+  const fnSearchProduct = debounce(() => {
+    $tableQueryParams.setKey('query', inputSearch.value);
+  }, 300);
+
 
   fnToggle();
 
@@ -90,10 +107,6 @@
     fnToggle();
   });
 
-  import { $tableQueryParams } from '../stores/tableQueryParamsStore'
-  $tableQueryParams.subscribe( tqp => {
-    console.log('hey im in a Navbar!');
-    console.log(tqp);
-  })
+  inputSearch.addEventListener('keyup', fnSearchProduct);
 
 </script>
