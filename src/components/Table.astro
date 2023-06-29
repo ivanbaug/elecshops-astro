@@ -58,6 +58,10 @@ import { apiUrl } from "../config";
 
 
 <script >
+
+  import type { TableQueryParams } from '../stores/tableQueryParamsStore'
+  import { $tableQueryParams } from '../stores/tableQueryParamsStore'
+
   interface Product {
     url: string;
     sku: string;
@@ -77,16 +81,6 @@ import { apiUrl } from "../config";
     page_qty: number;
     total: number;
   }
-  interface TableQueryParams {
-    query: string;
-    instock: string;
-    order_by: string;
-    sort: string;
-    page: number;
-    per_page: number;
-  }
-
-  let tQueryParams : TableQueryParams;
 
   function updateTable(products: Product[]) {
     if(tbody!=null) {
@@ -151,8 +145,7 @@ import { apiUrl } from "../config";
         btn.disabled = true;
       } else {
         btn.onclick = () => {
-          tQueryParams.page = currentPage - 1;
-          saveQueryParams();
+          $tableQueryParams.setKey('page', currentPage - 1 );
           refreshProductsTable();
         };
       }
@@ -163,8 +156,7 @@ import { apiUrl } from "../config";
         btn.disabled = true;
       } else {
         btn.onclick = () => {
-          tQueryParams.page = currentPage + 1;
-          saveQueryParams();
+          $tableQueryParams.setKey('page', currentPage + 1 );
           refreshProductsTable();
         };
       }
@@ -172,8 +164,7 @@ import { apiUrl } from "../config";
       btn.className = n === currentPage ? "z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" : "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
       btn.innerText = '' + n;
       btn.onclick = () => {
-        tQueryParams.page = n;
-        saveQueryParams();
+        $tableQueryParams.setKey('page', n );
         refreshProductsTable();
       };
     }
@@ -181,24 +172,9 @@ import { apiUrl } from "../config";
     return li;
   }
 
-  function newQueryParams (): TableQueryParams{
-    return {
-      query: '', instock: '', order_by: '', sort: '', page: 0, per_page: 0,
-    }
-  }
-
-  function retrieveQueryParams(){
-    const storedItem = sessionStorage.getItem('tQueryParams');
-    tQueryParams = storedItem ? JSON.parse(storedItem) as TableQueryParams : newQueryParams();
-  }
-
-  function saveQueryParams(){
-    sessionStorage.setItem('tQueryParams',JSON.stringify(tQueryParams));
-  }
-
-  function buildQueryString() : string{
+  function buildQueryString(tqp: TableQueryParams) : string{
     let qArray : string[] = [];
-    for (let [key, value] of Object.entries(tQueryParams)) {
+    for (let [key, value] of Object.entries(tqp)) {
       if(value){
         qArray.push(key+'='+value);
       }
@@ -207,27 +183,23 @@ import { apiUrl } from "../config";
   }
 
   async function onPageClick(page: number){
-    tQueryParams.page = page;
+    $tableQueryParams.setKey('page', page);
     await refreshProductsTable();
   }
 
-  function sortBy(col:string){
-    if(tQueryParams.sort === 'asc'){
-      tQueryParams.sort='desc';
-    } else {
-      tQueryParams.sort='asc';
-    }
-    tQueryParams.order_by=col;
-    saveQueryParams();
+  function sortBy(col: string) {
+    let tqpSort = $tableQueryParams.get().sort;
+    tqpSort = tqpSort === 'asc' ? 'desc' : 'asc';
+    $tableQueryParams.setKey('sort', tqpSort);
+    $tableQueryParams.setKey('order_by',col);
     refreshProductsTable();
   }
 
-  async function refreshProductsTable(){
-    
+  async function refreshProductsTable(){    
     if(tbody!=null) {
-      retrieveQueryParams();
       const apiUrl = tbody.dataset.api_url;
-      const response = await fetch(apiUrl+'/products/'+buildQueryString())
+      const tqp = $tableQueryParams.get();
+      const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp))
       const prd = await response.json() as ProductResponseData;
       const products = prd.data;
       updateTable(products);
@@ -235,17 +207,18 @@ import { apiUrl } from "../config";
     }
   }
   const tbody = document.getElementById("tableBody") as HTMLTableElement;
-  retrieveQueryParams();
   onPageClick(1);
 
   if(tbody!=null) {
     const sortBtns = document.querySelectorAll("[data-sort-by]") as NodeListOf<HTMLElement>;
       sortBtns.forEach(b=> {
         b.addEventListener("click", ()=>{
+          $tableQueryParams.setKey('page',1);
           const col = b.getAttribute("data-sort-by") as string;
           sortBy(col);
         })
       })
   }
 
+  
 </script>
