@@ -1,7 +1,7 @@
 ---
 
 ---
-<nav class="container mx-auto px-4 bg-white border-gray-200 dark:bg-gray-900 sticky top-0 z-50">
+<nav class="container mx-auto px-4 bg-white border-gray-200 dark:bg-gray-900 ">
   <div class="flex flex-wrap items-center justify-between mx-auto py-4">
     <a href="#" class="flex items-center px-1">
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">ElectroShops</span>
@@ -57,7 +57,8 @@
 
 
 <script>
-  import { $tableQueryParams } from '../stores/tableQueryParamsStore'
+  import { $tableQueryParams, searchString } from '../stores/tableQueryParamsStore'
+
 
   const btnNavbar = document.querySelector('#btn-menu-navbar') as HTMLButtonElement
   const btnDarkMode = document.querySelector('#btn-dark-mode') as HTMLButtonElement
@@ -69,16 +70,7 @@
     menuNavbar.classList.toggle('hidden');
   });
 
-
-  function debounce( callback: Function, delay = 500 ) {
-    let timeout: number;
-    return function() {
-        clearTimeout(timeout);
-        timeout = setTimeout(callback, delay);
-    }
-  };
-
-  const fnToggle = () => {
+  const toggleDarkMode = () => {
     if (
 				localStorage.theme === "dark" ||
 				(!("theme" in localStorage) &&
@@ -90,22 +82,29 @@
 			}
   };
 
-  const fnSearchProduct = debounce(() => {
-    $tableQueryParams.setKey('query', inputSearch.value);
-  }, 300);
-
-
-  fnToggle();
+  toggleDarkMode(); // Do not remove, this loads saved theme on launch
 
   btnDarkMode.addEventListener('click',()=>{
     localStorage.theme = 'dark';
-    fnToggle();
+    toggleDarkMode();
   });
 
   btnLightMode.addEventListener('click',()=>{
     localStorage.theme = 'light';
-    fnToggle();
+    toggleDarkMode();
   });
+
+  function debounce( callback: Function, delay = 500 ) {
+    let timeout: number;
+    return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(callback, delay);
+    }
+  };
+
+  const fnSearchProduct = debounce(() => {
+    searchString(inputSearch.value);
+  }, 300);
 
   inputSearch.addEventListener('keyup', fnSearchProduct);
 

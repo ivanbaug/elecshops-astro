@@ -1,8 +1,7 @@
 ---
-import { apiUrl } from "../config";
----
 
-<div class="container mx-auto relative overflow-x-auto shadow-md " style="height: calc(100vh - 60px - 74px);">
+---
+<div class="container mx-auto relative overflow-x-auto" style="height: calc(100vh - 60px - 74px);" >
   <table role="grid" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-50">
         <tr>
@@ -36,196 +35,89 @@ import { apiUrl } from "../config";
               <button data-sort-by="store" ><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1" aria-hidden="true" fill="currentColor" viewBox="0 0 320 512"><path d="M27.66 224h264.7c24.6 0 36.89-29.78 19.54-47.12l-132.3-136.8c-5.406-5.406-12.47-8.107-19.53-8.107c-7.055 0-14.09 2.701-19.45 8.107L8.119 176.9C-9.229 194.2 3.055 224 27.66 224zM292.3 288H27.66c-24.6 0-36.89 29.77-19.54 47.12l132.5 136.8C145.9 477.3 152.1 480 160 480c7.053 0 14.12-2.703 19.53-8.109l132.3-136.8C329.2 317.8 316.9 288 292.3 288z"/></svg></button>
             </div>
           </th>
-          <!-- <th scope="col">Last Update</th>
-          <th scope="col">Num. Updates</th> -->
         </tr>
       </thead>
-      <tbody id="tableBody" class="bg-white border-b dark:bg-gray-900 dark:border-gray-700" data-api_url={ apiUrl }>
+      <tbody id="tableBody" class="bg-white border-b dark:bg-gray-900 dark:border-gray-700" >
       </tbody>
     </table>
 </div>
-
-<nav aria-label="Page navigation example" class="flex flex-col items-center">
-  <!-- Help text -->
-  <span class="text-sm text-gray-700 dark:text-gray-400">
-      Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">1</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">10</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">100</span> Entries
-  </span>
-  <ul id="paginationButtons" class="inline-flex items-center -space-x-px">
-
-  </ul>
-</nav>
-
-
-
 <script >
 
-  import type { TableQueryParams } from '../stores/tableQueryParamsStore'
-  import { $tableQueryParams } from '../stores/tableQueryParamsStore'
+  import { Product, ProductResponseData, getProductData } from '../scripts/product';
+  import { $paginationData, type PaginationData } from '../stores/paginationDataStore';
+  import { $tableQueryParams, setTableOrder } from '../stores/tableQueryParamsStore'
 
-  interface Product {
-    url: string;
-    sku: string;
-    description: string;
-    stock: number;
-    price:number;
-    id_store: number;
-    last_update: Date;
-    num_updates: number;
-    store_name: string;
-    country: string;
-  }
-  interface ProductResponseData {
-    data: Product[];
-    page: number;
-    per_page: number;
-    page_qty: number;
-    total: number;
-  }
+  const tbody = document.getElementById("tableBody") as HTMLTableElement;
 
   function updateTable(products: Product[]) {
     if(tbody!=null) {
-        tbody.innerHTML = "";
-        products.forEach((product, i:number) => {
-            const linkIcon = '&nbsp<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>';
-            const row = tbody.insertRow(i);
-            row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
-            const c0 = row.insertCell(0);
-            const c1 = row.insertCell(1);
-            const c2 = row.insertCell(2);
-            const c3 = row.insertCell(3);
-            const c4 = row.insertCell(4);
-            c0.className = "sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
-            c0.innerHTML = '<a href="'+product.url+'" class="flex items-center font-bold visited:text-indigo-700 dark:visited:text-indigo-400" ><span>'+product.sku+'</span>'+linkIcon+'</a>';
-            c1.innerHTML = product.description;
-            c2.className = 'text-right pr-4'
-            c2.innerHTML = ''+product.stock;
-            c3.className = 'text-right pr-4'
-            c3.innerHTML = '$ '+product.price.toLocaleString('en');
-            c4.className = 'text-center hidden sm:table-cell'
-            c4.innerHTML = ''+product.store_name;
-        })
+      tbody.innerHTML = "";
+      const linkIcon = '&nbsp<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">  <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>';
+      if (!products){
+        const row = tbody.insertRow();
+        row.className = "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
+        const c0 = row.insertCell(0);
+        c0.className = "sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
+        c0.innerHTML = 'No products to show.';
+        return;
+      }
+      products.forEach((product, i:number) => {
+          const row = tbody.insertRow(i);
+          row.className = i % 2 === 0 ? "bg-white border-b dark:bg-gray-900 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600" : "border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600";
+          const c0 = row.insertCell(0);
+          const c1 = row.insertCell(1);
+          const c2 = row.insertCell(2);
+          const c3 = row.insertCell(3);
+          const c4 = row.insertCell(4);
+          c0.className = "sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white";
+          c0.innerHTML = '<a href="'+product.url+'" class="flex items-center font-bold visited:text-indigo-700 dark:visited:text-indigo-400" ><span>'+product.sku+'</span>'+linkIcon+'</a>';
+          c1.innerHTML = product.description;
+          c2.className = 'text-right pr-4'
+          c2.innerHTML = ''+product.stock;
+          c3.className = 'text-right pr-4'
+          c3.innerHTML = '$ '+product.price.toLocaleString('en');
+          c4.className = 'text-center hidden sm:table-cell'
+          c4.innerHTML = ''+product.store_name;
+      });
     } 
   }
 
-  function updatePagination(prd: ProductResponseData) {
-    if (tbody != null){
-      const pageFirstRow = document.getElementById("pageFirstRow") as HTMLSpanElement;
-      const pageLastRow = document.getElementById("pageLastRow") as HTMLSpanElement;
-      const totalRows = document.getElementById("totalRows") as HTMLSpanElement;
-      const paginationButtons = document.getElementById("paginationButtons") as HTMLUListElement
-      pageFirstRow.innerText = ''+((prd.page-1)*prd.per_page+1);
-      pageLastRow.innerText = ''+Math.min(prd.page*prd.per_page, prd.total);
-      totalRows.innerText = ''+prd.total;
-
-      paginationButtons.innerHTML = '';
-
-      // Add previous button
-      const prev = buildPagButton(0, prd.page, 'prev', prd.page === 1);
-      paginationButtons.appendChild(prev);
-
-      // Add page buttons
-      for (let i=1; i<=prd.page_qty; i++){
-        const li = buildPagButton(i, prd.page);
-        paginationButtons.appendChild(li);
-      }
-
-      // Add next button
-      const nxt = buildPagButton(0, prd.page, 'nxt', prd.page === prd.page_qty);
-      paginationButtons.appendChild(nxt);
-    }
-  }
-
-  function buildPagButton(n:number, currentPage: number, btnType?:string, btnDisabled?:boolean){
-    const li = document.createElement('li') as HTMLLIElement;
-    const btn = document.createElement('button') as HTMLButtonElement;
-    if (btnType === 'prev') {
-      btn.className = "block px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
-      btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`;
-      if (btnDisabled) {
-        btn.disabled = true;
-      } else {
-        btn.onclick = () => {
-          $tableQueryParams.setKey('page', currentPage - 1 );
-          refreshProductsTable();
-        };
-      }
-    } else if (btnType === 'nxt') {
-      btn.className = "block px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
-      btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>`;
-      if (btnDisabled) {
-        btn.disabled = true;
-      } else {
-        btn.onclick = () => {
-          $tableQueryParams.setKey('page', currentPage + 1 );
-          refreshProductsTable();
-        };
-      }
-    } else {
-      btn.className = n === currentPage ? "z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" : "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400";
-      btn.innerText = '' + n;
-      btn.onclick = () => {
-        $tableQueryParams.setKey('page', n );
-        refreshProductsTable();
-      };
-    }
-    li.appendChild(btn);
-    return li;
-  }
-
-  function buildQueryString(tqp: TableQueryParams) : string{
-    let qArray : string[] = [];
-    for (let [key, value] of Object.entries(tqp)) {
-      if(value){
-        qArray.push(key+'='+value);
-      }
-    }
-    return qArray.length > 0 ? '?'+qArray.join('&') : '';
-  }
-
-  async function onPageClick(page: number){
-    $tableQueryParams.setKey('page', page);
-    await refreshProductsTable();
-  }
-
-  function sortBy(col: string) {
-    let tqpSort = $tableQueryParams.get().sort;
-    tqpSort = tqpSort === 'asc' ? 'desc' : 'asc';
-    $tableQueryParams.setKey('sort', tqpSort);
-    $tableQueryParams.setKey('order_by',col);
-    refreshProductsTable();
-  }
+  window.addEventListener('load', function() {
+    refreshProductsTable(); // once page loads
+  }, false);
 
   async function refreshProductsTable(){    
     if(tbody!=null) {
-      const apiUrl = tbody.dataset.api_url;
-      const tqp = $tableQueryParams.get();
-      const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp))
-      const prd = await response.json() as ProductResponseData;
-      const products = prd.data;
-      updateTable(products);
-      updatePagination(prd); 
+      const response : ProductResponseData = await getProductData();
+      updateTable(response.data);
+
+      const paginationData : PaginationData = {
+        page: response.page,
+        per_page: response.per_page,
+        page_qty: response.page_qty,
+        total: response.total,
+      }
+      $paginationData.set(paginationData); 
     }
   }
-  const tbody = document.getElementById("tableBody") as HTMLTableElement;
-  onPageClick(1);
-
+  
   if(tbody!=null) {
     const sortBtns = document.querySelectorAll("[data-sort-by]") as NodeListOf<HTMLElement>;
       sortBtns.forEach(b=> {
         b.addEventListener("click", ()=>{
-          $tableQueryParams.setKey('page',1);
           const col = b.getAttribute("data-sort-by") as string;
-          sortBy(col);
+          setTableOrder(col);
         })
       });
   }
 
-  $tableQueryParams.listen((tqp,changedKey)=>{
-    if (changedKey === 'query'){
-      $tableQueryParams.setKey('page',1);
+  $tableQueryParams.listen((tqp, changedKey)=>{
+    console.log('Key changed: '+changedKey); // TODO: delete
+    if (changedKey === 'query') {
+    }
+    if (changedKey) {
       refreshProductsTable();
     }
   });
 
-  
 </script>

@@ -17,3 +17,25 @@ export const $tableQueryParams = map<TableQueryParams>({
     page: 0,
     per_page: 0,
 });
+
+export function searchString(q: string){
+    let current = $tableQueryParams.get();
+    if (current.query !== q) {
+        current.page = 1;
+        $tableQueryParams.set(current); // dont need to get changed key value in this case
+        $tableQueryParams.setKey('query', q); // listener gets changed key value
+    }
+}
+
+export function setTableOrder(orderBy:string) {
+    let current = $tableQueryParams.get();
+    current.page = 1;
+    if (current.order_by === orderBy) {
+        $tableQueryParams.set(current);
+        $tableQueryParams.setKey('sort', current.sort === 'asc' ? 'desc': 'asc');
+    } else {
+        current.sort = 'asc';
+        $tableQueryParams.set(current);
+        $tableQueryParams.setKey('order_by', orderBy);
+    }
+}
