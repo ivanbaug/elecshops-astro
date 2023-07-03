@@ -5,13 +5,14 @@
     <span class="text-sm text-gray-700 dark:text-gray-400">
         Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">0</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">0</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">0</span> Entries
     </span>
-    <ul id="paginationButtons" class="inline-flex items-center sm:-space-x-px">
+    <ul id="paginationButtons" class="inline-flex items-center md:-space-x-px">
     </ul>
 </nav>
 
 <script>
     import { $tableQueryParams } from '../stores/tableQueryParamsStore';
     import { $paginationData, PaginationData } from '../stores/paginationDataStore';
+    
 
     function updatePagination(pd: PaginationData) {
         const pageFirstRow = document.getElementById("pageFirstRow") as HTMLSpanElement;
@@ -26,8 +27,18 @@
         const prev = buildPagButton(0, pd.page, 'prev', pd.page === 1);
         paginationButtons.appendChild(prev);
         // Add page buttons
-        for (let i=1; i<=pd.page_qty; i++){
-            const li = buildPagButton(i, pd.page);
+        const pagesToView = 2;
+        let minpage = pd.page-pagesToView-1;
+        let maxpage = pd.page+pagesToView+1;
+        if (minpage<1) {
+            maxpage = maxpage - minpage;
+        }
+        if (maxpage>pd.page_qty) {
+            minpage = minpage-(maxpage-pd.page_qty-1);
+        }
+
+        for (let i=Math.max(1,minpage); i<=Math.min(pd.page_qty,maxpage); i++){
+            const li = buildPagButton(i, pd.page, i===minpage || i===maxpage ? 'ellipses' : '');
             paginationButtons.appendChild(li);
         }
         // Add next button
@@ -59,8 +70,8 @@
             };
         }
         } else {
-        btn.className = n === currentPage ? "block z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" : "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400 hidden sm:block";
-        btn.innerText = '' + n;
+        btn.className = n === currentPage ? "block z-10 px-3 py-2 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white" : "px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white disabled:opacity-70 disabled:hover:bg-white disabled:hover:text-gray-500 disabled:dark:hover:bg-gray-800 disabled:dark:hover:text-gray-400 hidden md:block";
+        btn.innerText = btnType === 'ellipses' ? '...' : ''+n; // show ellipses if the page is above or below the threshold
         btn.onclick = () => {
             $tableQueryParams.setKey('page', n );
         };
