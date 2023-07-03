@@ -1,24 +1,31 @@
 ---
 
 ---
-<nav aria-label="Page navigation" class="flex flex-col items-center">
-    <span class="text-sm text-gray-700 dark:text-gray-400">
-        Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">0</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">0</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">0</span> Entries
-    </span>
-    <ul id="paginationButtons" class="inline-flex items-center md:-space-x-px">
-    </ul>
+<nav aria-label="Page navigation" class="flex justify-around">
+    <div class="flex flex-col items-center"> 
+        <span class="text-sm text-gray-700 dark:text-gray-400">
+            Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">0</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">0</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">0</span> Entries
+        </span>
+        <ul id="paginationButtons" class="inline-flex items-center md:-space-x-px"></ul>
+    </div>
+    <div class="flex items-center justify-center gap-2">
+        <div class="text-sm text-gray-700 dark:text-gray-400">Go to page:</div>
+        <select id="pages-selector" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <option value="0">No options</option>
+        </select>
+    </div>
 </nav>
 
 <script>
     import { $tableQueryParams } from '../stores/tableQueryParamsStore';
-    import { $paginationData, PaginationData } from '../stores/paginationDataStore';
-    
+    import { $paginationData, PaginationData } from '../stores/paginationDataStore';    
 
     function updatePagination(pd: PaginationData) {
         const pageFirstRow = document.getElementById("pageFirstRow") as HTMLSpanElement;
         const pageLastRow = document.getElementById("pageLastRow") as HTMLSpanElement;
         const totalRows = document.getElementById("totalRows") as HTMLSpanElement;
-        const paginationButtons = document.getElementById("paginationButtons") as HTMLUListElement
+        const paginationButtons = document.getElementById("paginationButtons") as HTMLUListElement;
+        const pageSelector = document.getElementById('pages-selector') as HTMLSelectElement;
         pageFirstRow.innerText = ''+((pd.page-1)*pd.per_page+1);
         pageLastRow.innerText = ''+Math.min(pd.page*pd.per_page, pd.total);
         totalRows.innerText = ''+pd.total;
@@ -44,6 +51,19 @@
         // Add next button
         const nxt = buildPagButton(0, pd.page, 'nxt', pd.page === pd.page_qty || pd.page_qty <= 1);
         paginationButtons.appendChild(nxt);
+
+        // Page selector
+        pageSelector.innerHTML = '';
+        for (let i=1;i<=pd.page_qty; i++) {
+            const opt = document.createElement('option') as HTMLOptionElement;
+            opt.value = ''+i;
+            opt.innerHTML = ''+i;
+            opt.selected = pd.page===i;
+            opt.onclick = ()=> {
+                $tableQueryParams.setKey('page', i );
+            };
+            pageSelector.appendChild(opt);
+        }
     }
 
     function buildPagButton(n:number, currentPage: number, btnType?:string, btnDisabled?:boolean){
