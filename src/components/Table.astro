@@ -99,7 +99,6 @@
     if(tbody!=null) {
       const response : ProductResponseData = await getProductData();
       updateTable(response.data);
-
       const paginationData : PaginationData = {
         page: response.page,
         per_page: response.per_page,
@@ -121,9 +120,6 @@
   }
 
   $tableQueryParams.listen((tqp, changedKey)=>{
-    console.log('Key changed: '+changedKey); // TODO: delete
-    if (changedKey === 'instock') {
-    }
     if (changedKey) {
       refreshProductsTable();
     }
