@@ -1,4 +1,4 @@
-import { map } from 'nanostores'
+import { map, atom } from 'nanostores'
 
 export interface TableQueryParams {
     query: string;
@@ -17,6 +17,8 @@ export const $tableQueryParams = map<TableQueryParams>({
     page: 0,
     per_page: 0,
 });
+
+export const $loadingTable = atom(false);
 
 export function searchString(q: string){
     let current = $tableQueryParams.get();

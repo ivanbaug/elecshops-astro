@@ -1,6 +1,5 @@
-import type { TableQueryParams } from "../stores/tableQueryParamsStore";
 import { apiUrl } from "../config";
-import { $tableQueryParams } from "../stores/tableQueryParamsStore";
+import { $tableQueryParams, $loadingTable, TableQueryParams } from "../stores/tableQueryParamsStore";
 
 export interface Product {
     url: string;
@@ -24,9 +23,12 @@ export interface ProductResponseData {
 }
 
 async function getProductData() {    
+    $loadingTable.set(true);
     const tqp = $tableQueryParams.get();
-    const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp))
-    return await response.json() as ProductResponseData; 
+    const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp));
+    const typedResponse = await response.json() as ProductResponseData;
+    $loadingTable.set(false);
+    return typedResponse; 
 }
 
 function buildQueryString(tqp: TableQueryParams) : string {

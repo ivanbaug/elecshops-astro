@@ -2,13 +2,16 @@
 
 ---
 <nav aria-label="Page navigation" class="flex justify-around">
-    <div class="flex flex-col items-center"> 
+    <div id="loading-message" class="flex items-center justify-center ">
+        <div class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">Loading...</div>
+    </div>
+    <div id="paginator-btns-container" class="flex flex-col items-center"> 
         <span class="text-sm text-gray-700 dark:text-gray-400">
             Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">0</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">0</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">0</span> Entries
         </span>
         <ul id="paginationButtons" class="inline-flex items-center md:-space-x-px"></ul>
     </div>
-    <div class="flex items-center justify-center gap-2">
+    <div id="paginator-selector-container" class="flex items-center justify-center gap-2">
         <div class="text-sm text-gray-700 dark:text-gray-400">Go to page:</div>
         <select id="pages-selector" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             <option value="0">No options</option>
@@ -17,8 +20,8 @@
 </nav>
 
 <script>
-    import { $tableQueryParams } from '../stores/tableQueryParamsStore';
-    import { $paginationData, PaginationData } from '../stores/paginationDataStore';    
+    import { $tableQueryParams, $loadingTable } from '../stores/tableQueryParamsStore';
+    import { $paginationData, PaginationData } from '../stores/paginationDataStore';
 
     function updatePagination(pd: PaginationData) {
         const pageFirstRow = document.getElementById("pageFirstRow") as HTMLSpanElement;
@@ -99,7 +102,23 @@
         li.appendChild(btn);
         return li;
   }
+
   $paginationData.listen((pd, changedKey)=>{
     updatePagination(pd);
+  });
+
+  $loadingTable.subscribe((isLoading) => {
+    const loadingMsg = document.getElementById('loading-message') as HTMLElement;
+    const paginatorBtns = document.getElementById('paginator-btns-container') as HTMLElement;
+    const paginatorSelector = document.getElementById("paginator-selector-container") as HTMLElement;
+    if (isLoading) {
+        paginatorBtns.style.display = 'none';
+        paginatorSelector.style.display = 'none';
+        loadingMsg.style.display = 'flex';
+    } else {
+        loadingMsg.style.display = 'none';
+        paginatorBtns.style.display = 'flex';
+        paginatorSelector.style.display = 'flex';
+    }
   });
 </script>
