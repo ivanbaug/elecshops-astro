@@ -19,6 +19,7 @@ export const $tableQueryParams = map<TableQueryParams>({
 });
 
 export const $loadingTable = atom(false);
+export const $networkError = atom(false);
 
 export function searchString(q: string){
     let current = $tableQueryParams.get();

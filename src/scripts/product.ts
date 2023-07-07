@@ -1,5 +1,5 @@
 import { apiUrl } from "../config";
-import { $tableQueryParams, $loadingTable, TableQueryParams } from "../stores/tableQueryParamsStore";
+import { $tableQueryParams, $loadingTable, TableQueryParams, $networkError } from "../stores/tableQueryParamsStore";
 
 export interface Product {
     url: string;
@@ -25,8 +25,20 @@ export interface ProductResponseData {
 async function getProductData() {    
     $loadingTable.set(true);
     const tqp = $tableQueryParams.get();
-    const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp));
-    const typedResponse = await response.json() as ProductResponseData;
+    let typedResponse:  ProductResponseData = {
+      data: [],
+      page: 0,
+      per_page: 0,
+      page_qty: 0,
+      total: 0,
+    };
+    try {
+      const response = await fetch(apiUrl + '/products/' + buildQueryString(tqp));
+      typedResponse = await response.json() as ProductResponseData;
+      $networkError.set(false);
+    } catch (error) {    
+      $networkError.set(true);
+    }
     $loadingTable.set(false);
     return typedResponse; 
 }

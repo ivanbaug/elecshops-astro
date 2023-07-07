@@ -5,6 +5,9 @@
     <div id="loading-message" class="flex items-center justify-center ">
         <div class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">Loading...</div>
     </div>
+    <div id="error-message" class="flex items-center justify-center ">
+        <div class="px-3 py-1 text-xs font-medium leading-none text-center text-blue-800 bg-blue-200 rounded-full animate-pulse dark:bg-blue-900 dark:text-blue-200">Network Error, try again later.</div>
+    </div>
     <div id="paginator-btns-container" class="flex flex-col items-center"> 
         <span class="text-sm text-gray-700 dark:text-gray-400">
             Showing <span id="pageFirstRow" class="font-semibold text-gray-900 dark:text-white">0</span> to <span id="pageLastRow" class="font-semibold text-gray-900 dark:text-white">0</span> of <span id="totalRows" class="font-semibold text-gray-900 dark:text-white">0</span> Entries
@@ -20,7 +23,7 @@
 </nav>
 
 <script>
-    import { $tableQueryParams, $loadingTable } from '../stores/tableQueryParamsStore';
+    import { $tableQueryParams, $loadingTable, $networkError } from '../stores/tableQueryParamsStore';
     import { $paginationData, PaginationData } from '../stores/paginationDataStore';
 
     function updatePagination(pd: PaginationData) {
@@ -109,6 +112,7 @@
 
   $loadingTable.subscribe((isLoading) => {
     const loadingMsg = document.getElementById('loading-message') as HTMLElement;
+    const errorgMsg = document.getElementById('error-message') as HTMLElement;
     const paginatorBtns = document.getElementById('paginator-btns-container') as HTMLElement;
     const paginatorSelector = document.getElementById("paginator-selector-container") as HTMLElement;
     if (isLoading) {
@@ -116,9 +120,15 @@
         paginatorSelector.style.display = 'none';
         loadingMsg.style.display = 'flex';
     } else {
-        loadingMsg.style.display = 'none';
-        paginatorBtns.style.display = 'flex';
-        paginatorSelector.style.display = 'flex';
+        if($networkError.get()) {
+            loadingMsg.style.display = 'none';
+            errorgMsg.style.display = 'flex';
+        } else {
+            loadingMsg.style.display = 'none';
+            errorgMsg.style.display = 'none';
+            paginatorBtns.style.display = 'flex';
+            paginatorSelector.style.display = 'flex';
+        }
     }
   });
 </script>
