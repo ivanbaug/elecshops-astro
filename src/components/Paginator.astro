@@ -65,11 +65,11 @@
             opt.value = ''+i;
             opt.innerHTML = ''+i;
             opt.selected = pd.page===i;
-            opt.onclick = ()=> {
-                $tableQueryParams.setKey('page', i );
-            };
             pageSelector.appendChild(opt);
         }
+        pageSelector.addEventListener('change', function () {
+            $tableQueryParams.setKey('page', Number(this.value));
+        });
     }
 
     function buildPagButton(n:number, currentPage: number, btnType?:string, btnDisabled?:boolean){
