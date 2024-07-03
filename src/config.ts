@@ -1,2 +1,2 @@
-export const apiUrl = 'https://esapi.thingiv.site';
+export const apiUrl = 'https://esapi.ivlab.top';
 export const astroBase = '/elecshops-astro'
